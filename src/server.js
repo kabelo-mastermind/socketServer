@@ -8,6 +8,12 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 initializeSocket(server);
 
+// Manually set the CSP header
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "connect-src 'self' wss://socketserver-k62n.onrender.com");
+  next();
+});
+
 // Other routes or middleware can be added here
 app.get('/', (req, res) => {
   res.send('WebSocket server is running!');
