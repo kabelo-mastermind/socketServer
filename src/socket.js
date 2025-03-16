@@ -4,16 +4,18 @@ let io;
 
 const initializeSocket = (server) => {
   const io = new Server(server, {
-    cors: {
-      // origin: [
-      //   'http://168.172.185.178:8081',  // First device IP
-      //   'http://10.100.9.10:8081',      // Second device IP
-      //   'http://localhost:8081',         // Localhost for local development
-      //   'https://your-app-name.onrender.com', // Render deployed URL
-      // ],
-      origin: "*",
-      methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
-    }
+    // Update to explicit allowed origins
+    origin: [
+      'http://168.172.185.178:8081',
+      'http://10.100.9.10:8081',
+      'http://localhost:8081',
+      'https://your-app-name.onrender.com'
+    ],
+    methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
+    // Add these for better compatibility
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+
   });
 
   io.on("connection", (socket) => {
