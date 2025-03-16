@@ -7,7 +7,7 @@ const initializeSocket = (server) => {
     // Update to explicit allowed origins
     origin: [
       'http://168.172.185.178:8081',
-      'http://10.100.9.10:8081',
+      'http://10.100.99.10:8081',
       'http://localhost:8081',
       'https://your-app-name.onrender.com'
     ],
