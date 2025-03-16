@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 // Update CSP header to include WebSocket connections
 res.setHeader(
   "Content-Security-Policy", 
-  "connect-src 'self' wss://* YOUR_RENDER_URL *.onrender.com"
+  "connect-src 'self' wss://socketserver-k62n.onrender.com"
 );
   next();
 });
