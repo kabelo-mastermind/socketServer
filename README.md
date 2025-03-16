@@ -1,6 +1,6 @@
 "# socketServer"
 
-##/websocket-server
+## /websocket-server
 │── /src
 │   ├── /config         # Configuration files (e.g., CORS, environment variables)
 │   ├── /utils          # Utility functions
