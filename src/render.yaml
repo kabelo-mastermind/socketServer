@@ -1,0 +1,14 @@
+# Exported from Render on 2025-03-16T16:52:56Z
+services:
+- type: web
+  name: socketServer
+  runtime: node
+  repo: https://github.com/kabelo-mastermind/socketServer
+  plan: free
+  envVars:
+  - key: PORT
+    sync: false
+  region: oregon
+  buildCommand: npm install
+  startCommand: node src/server.js
+version: "1"
