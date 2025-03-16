@@ -10,7 +10,11 @@ initializeSocket(server);
 
 // Manually set the CSP header
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "connect-src 'self' wss://socketserver-k62n.onrender.com");
+// Update CSP header to include WebSocket connections
+res.setHeader(
+  "Content-Security-Policy", 
+  "connect-src 'self' wss://* YOUR_RENDER_URL *.onrender.com"
+);
   next();
 });
 
