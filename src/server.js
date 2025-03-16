@@ -13,8 +13,8 @@ app.get('/', (req, res) => {
   res.send('WebSocket server is running!');
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+// Use process.env.PORT for Render compatibility
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 WebSocket server running on port ${PORT}`);
 });
