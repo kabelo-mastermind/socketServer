@@ -36,7 +36,12 @@ const initializeSocket = (server) => {
     // Notify only drivers when a new trip request is created
     socket.on("newTripRequest", (tripData) => {
       console.log("📢 New trip request received:", tripData);
-      io.to("drivers").emit("newTripNotification", tripData); // Notify only drivers
+
+      // Emit notification to the "drivers" room
+      io.to("drivers").emit("newTripNotification", tripData);
+
+      // Log notification sent to drivers
+      console.log("📢 Notification sent to driver via Socket.io:", tripData);
     });
 
     // When a trip is accepted, notify the customer
