@@ -21,26 +21,26 @@ const initializeSocket = (server) => {
   io.on("connection", (socket) => {
     console.log(`🚀 New client connected: ${socket.id}`); // Updated log
 
-    // Driver or customer joins a specific room
-    socket.on("joinRoom", (userId, userType) => {
-      if (!userId || !userType) return;
+  // Driver or customer joins a specific room
+  socket.on("joinRoom", (userId, userType) => {
+    if (!userId || !userType) return;
 
-      // Join the appropriate room based on the user type
-      const roomName = userType === "driver" ? "drivers" : `customer_${userId}`;
-      socket.join(roomName);
-      connectedUsers[socket.id] = { userId, userType };
+    // Dynamically create a room name for drivers based on their userId
+    const roomName = userType === "driver" ? `driver_${userId}` : `customer_${userId}`;
+    socket.join(roomName);
+    connectedUsers[socket.id] = { userId, userType };
 
-      console.log(`✅ ${userType} with ID ${userId} joined room: ${roomName}`);
-    });
+    console.log(`✅ ${userType} with ID ${userId} joined room: ${roomName}`);
+  });
 
      // Notify a specific driver when a new trip request is created
   socket.on("newTripRequest", ({ tripData, driverId }) => {
-    console.log("📢 New trip request received:", tripData);
+    console.log("📢 New trip request received:", tripData, driverId);
 
     // Emit notification to a specific driver (not all drivers)
-    io.to(`driver_${driverId}`).emit("newTripNotification", tripData);
+    io.to(`driver_${driverId}`).emit("newTripNotification", tripData, driverId);
 
-    console.log(`📢 Notification sent to driver_${driverId}:`, tripData);
+    console.log(`📢 Notification sent to driver_${driverId}:`, tripData, driverId);
   });
 
     // When a trip is accepted, notify the customer
