@@ -35,15 +35,22 @@ const initializeSocket = (server) => {
 
      // Notify a specific driver when a new trip request is created
      socket.on("newTripRequest", ({ tripData, driverId }) => {
-      console.log("📢 New trip request received:", tripData, driverId); // Log the received data
-      if (tripData && driverId) {
-        io.to(`driver_${driverId}`).emit("newTripNotification", tripData, driverId);
-        console.log(`📢 Notification sent to driver_${driverId}:`, tripData, driverId);
-      } else {
-        console.error("❌ Missing tripData or driverId in newTripRequest");
+      if (!tripData || !driverId) {
+        console.error("❌ Missing tripData or driverId");
+        return;
       }
+    
+      console.log(`📢 New trip request for Driver ID: ${driverId}`);
+      console.log("🚀 tripData:", tripData);
+    
+      const driverRoom = `driver_${driverId}`;
+      
+      console.log(`📡 Emitting to room: ${driverRoom}`);
+      
+      io.to(driverRoom).emit("newTripNotification", tripData);
     });
     
+     
 
     // When a trip is accepted, notify the customer
     socket.on("acceptTrip", ({ tripId, customerId }) => {
