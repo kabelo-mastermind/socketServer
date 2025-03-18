@@ -25,7 +25,8 @@ const initializeSocket = (server) => {
     socket.on("joinRoom", (userId, userType) => {
       if (!userId || !userType) return;
 
-      let roomName = userType === "driver" ? "drivers" : `customer_${userId}`;
+      // Join the appropriate room based on the user type
+      const roomName = userType === "driver" ? "drivers" : `customer_${userId}`;
       socket.join(roomName);
       connectedUsers[socket.id] = { userId, userType };
 
@@ -61,8 +62,9 @@ const initializeSocket = (server) => {
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      if (connectedUsers[socket.id]) {
-        console.log(`⚡ ${connectedUsers[socket.id].userType} disconnected: ${socket.id}`);
+      const user = connectedUsers[socket.id];
+      if (user) {
+        console.log(`⚡ ${user.userType} disconnected: ${socket.id}`);
         delete connectedUsers[socket.id];
       }
     });
