@@ -47,6 +47,10 @@ const initializeSocket = (server) => {
     // When a trip is accepted, notify the customer
     socket.on("acceptTrip", ({ tripId, customerId }) => {
       try {
+        if (!tripId || !customerId) {
+          console.error("❌ Missing tripId or customerId");
+          return;
+        }
         console.log(`✅ Trip ${tripId} accepted for customer ${customerId}`);
         io.to(`customer_${customerId}`).emit("tripAccepted", { tripId });
       } catch (error) {
