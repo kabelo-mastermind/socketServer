@@ -50,15 +50,22 @@ const initializeSocket = (server) => {
     });
 
     // When a trip is canceled, notify the customer and drivers
-    socket.on("tripCancelled", ({ tripId, customerId }) => {
+    socket.on('tripCancelled', ({ tripId, customerId }) => {
       try {
-        console.log(`❌ Trip ${tripId} has been canceled`);
-        io.to(`customer_${customerId}`).emit("tripCancelled", { tripId });
-        io.to("drivers").emit("tripCancelled", { tripId });
+        // Update trip status to declined in the database
+        const updateTripStatusQuery = `UPDATE trips SET statuses = 'declined', cancellation_reason = ?, cancel_by = 'driver' WHERE id = ?`;
+        // Assuming you have a function to run the query and handle the database
+        runQuery(updateTripStatusQuery, [cancellationReason, tripId]);
+    
+        // Notify the customer about the cancellation
+        io.to(`customer_${customerId}`).emit('tripCancelled', { tripId });
+    
+        console.log(`❌ Trip ${tripId} has been canceled by the driver`);
       } catch (error) {
-        console.error("❌ Error emitting tripCancelled:", error);
+        console.error("❌ Error handling trip cancellation:", error);
       }
     });
+    
 
     // Handle disconnection
     socket.on("disconnect", () => {
