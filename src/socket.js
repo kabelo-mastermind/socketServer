@@ -19,7 +19,7 @@ const initializeSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log(`🚀 New client connected: ${socket.id}`);
+    console.log(`🚀 New client connected: ${socket.id}`); // Updated log
 
     // Driver or customer joins a specific room
     socket.on("joinRoom", (userId, userType) => {
@@ -74,7 +74,6 @@ const initializeSocket = (server) => {
         console.error("❌ Error handling trip cancellation:", error);
       }
     });
-    
 
     // Handle disconnection
     socket.on("disconnect", () => {
