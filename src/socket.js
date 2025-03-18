@@ -33,16 +33,15 @@ const initializeSocket = (server) => {
       console.log(`✅ ${userType} with ID ${userId} joined room: ${roomName}`);
     });
 
-    // Notify only drivers when a new trip request is created
-    socket.on("newTripRequest", (tripData) => {
-      console.log("📢 New trip request received:", tripData);
+     // Notify a specific driver when a new trip request is created
+  socket.on("newTripRequest", ({ tripData, driverId }) => {
+    console.log("📢 New trip request received:", tripData);
 
-      // Emit notification to the "drivers" room
-      io.to("drivers").emit("newTripNotification", tripData);
+    // Emit notification to a specific driver (not all drivers)
+    io.to(`driver_${driverId}`).emit("newTripNotification", tripData);
 
-      // Log notification sent to drivers
-      console.log("📢 Notification sent to driver via Socket.io:", tripData);
-    });
+    console.log(`📢 Notification sent to driver_${driverId}:`, tripData);
+  });
 
     // When a trip is accepted, notify the customer
     socket.on("acceptTrip", ({ tripId, customerId }) => {
