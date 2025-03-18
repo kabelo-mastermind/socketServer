@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 
 let io;
+const connectedUsers = {}; // Store connected users
 
 const initializeSocket = (server) => {
   io = new Server(server, {
@@ -20,35 +21,50 @@ const initializeSocket = (server) => {
   io.on("connection", (socket) => {
     console.log(`🚀 New client connected: ${socket.id}`);
 
-    // Driver joins a room based on user ID
-    socket.on("joinRoom", (userId) => {
-      if (!userId) return;
-      const roomName = `customer_${userId}`;
+    // Driver or customer joins a specific room
+    socket.on("joinRoom", (userId, userType) => {
+      if (!userId || !userType) return;
+
+      let roomName = userType === "driver" ? "drivers" : `customer_${userId}`;
       socket.join(roomName);
-      console.log(`✅ User with ID ${userId} joined room: ${roomName}`);
+      connectedUsers[socket.id] = { userId, userType };
+
+      console.log(`✅ ${userType} with ID ${userId} joined room: ${roomName}`);
     });
 
-    // Notify drivers when a new trip request is created
+    // Notify only drivers when a new trip request is created
     socket.on("newTripRequest", (tripData) => {
       console.log("📢 New trip request received:", tripData);
-      io.emit("newTripNotification", tripData); // Broadcast to all drivers
+      io.to("drivers").emit("newTripNotification", tripData); // Notify only drivers
     });
 
-    // When a trip is accepted
-    socket.on("acceptTrip", (tripId) => {
-      console.log(`✅ Trip ${tripId} has been accepted`);
-      io.emit("tripAccepted", { tripId });
+    // When a trip is accepted, notify the customer
+    socket.on("acceptTrip", ({ tripId, customerId }) => {
+      try {
+        console.log(`✅ Trip ${tripId} accepted for customer ${customerId}`);
+        io.to(`customer_${customerId}`).emit("tripAccepted", { tripId });
+      } catch (error) {
+        console.error("❌ Error emitting tripAccepted:", error);
+      }
     });
 
-    // When a trip is canceled
-    socket.on("tripCancelled", (tripId) => {
-      console.log(`❌ Trip ${tripId} has been canceled`);
-      io.emit("tripCancelled", { tripId });
+    // When a trip is canceled, notify the customer and drivers
+    socket.on("tripCancelled", ({ tripId, customerId }) => {
+      try {
+        console.log(`❌ Trip ${tripId} has been canceled`);
+        io.to(`customer_${customerId}`).emit("tripCancelled", { tripId });
+        io.to("drivers").emit("tripCancelled", { tripId });
+      } catch (error) {
+        console.error("❌ Error emitting tripCancelled:", error);
+      }
     });
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      console.log(`⚡ Client disconnected: ${socket.id}`);
+      if (connectedUsers[socket.id]) {
+        console.log(`⚡ ${connectedUsers[socket.id].userType} disconnected: ${socket.id}`);
+        delete connectedUsers[socket.id];
+      }
     });
 
     // Handle socket errors
