@@ -9,7 +9,7 @@ const initializeSocket = (server) => {
       'http://168.172.185.178:8081',
       'http://10.100.99.10:8081',
       'http://localhost:8081',
-      'https://your-app-name.onrender.com'
+      'https://10.100.99.6:8081'
     ],
     methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
     // Add these for better compatibility
