@@ -19,7 +19,7 @@ const initializeSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log(`🚀 New client connected: ${socket.id}`);
+    console.log(`🚀 New client connected: ${socket.id},${userId},${userType}`);
 
     // Driver or customer joins a specific room
     socket.on("joinRoom", (userId, userType) => {
