@@ -18,7 +18,6 @@ const initializeSocket = (server) => {
     }
   });
 
-  // Broadcast to all connected users when a new driver joins the system
   io.on("connection", (socket) => {
     console.log(`🚀 New client connected: ${socket.id}`); // Updated log
 
@@ -51,6 +50,8 @@ const initializeSocket = (server) => {
       io.to(driverRoom).emit("newTripNotification", tripData);
     });
 
+
+
     // When a trip is accepted, notify the customer
     socket.on("acceptTrip", ({ tripId, customerId }) => {
       try {
@@ -65,7 +66,6 @@ const initializeSocket = (server) => {
       }
     });
 
-<<<<<<< HEAD
         // When a driver is close, notify the customer for arival
         socket.on("driverArrived", ({ tripId, customerId }) => {
           try {
@@ -106,34 +106,6 @@ const initializeSocket = (server) => {
               console.error("❌ Error emitting tripEnded:", error);
             }
           });
-=======
-    // When a trip is started, notify the customer
-    socket.on("startTrip", ({ tripId, customerId }) => {
-      try {
-        if (!tripId || !customerId) {
-          console.error("❌ Missing tripId or customerId");
-          return;
-        }
-        console.log(`✅ Trip ${tripId} started for customer ${customerId}`);
-        io.to(`customer_${customerId}`).emit("tripStarted", { tripId });
-      } catch (error) {
-        console.error("❌ Error emitting tripStarted:", error);
-      }
-    });
-    // When a trip is ended, notify the customer
-    socket.on("endTrip", ({ tripId, customerId }) => {
-      try {
-        if (!tripId || !customerId) {
-          console.error("❌ Missing tripId or customerId");
-          return;
-        }
-        console.log(`✅ Trip ${tripId} ended for customer ${customerId}`);
-        io.to(`customer_${customerId}`).emit("tripEnded", { tripId });
-      } catch (error) {
-        console.error("❌ Error emitting tripEnded:", error);
-      }
-    });
->>>>>>> 0b5aa1cdbdaf9d8493623f7f4a0d3471a4b23661
 
     // When a trip is canceled, notify the customer
     socket.on("declineTrip", ({ tripId, customerId }) => {
@@ -148,8 +120,6 @@ const initializeSocket = (server) => {
         console.error("❌ Error emitting tripDeclined:", error);
       }
     });
-    //robin work from here downwards call the driver and customer
-
 
     // Handle disconnection
     socket.on("disconnect", () => {
@@ -165,7 +135,6 @@ const initializeSocket = (server) => {
       console.error("❌ Socket error:", error);
     });
   });
-
 
   return io;
 };
