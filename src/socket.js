@@ -66,6 +66,33 @@ const initializeSocket = (server) => {
       }
     });
 
+        // When a trip is started, notify the customer
+        socket.on("startTrip", ({ tripId, customerId }) => {
+          try {
+            if (!tripId || !customerId) {
+              console.error("❌ Missing tripId or customerId");
+              return;
+            }
+            console.log(`✅ Trip ${tripId} started for customer ${customerId}`);
+            io.to(`customer_${customerId}`).emit("tripStarted", { tripId });
+          } catch (error) {
+            console.error("❌ Error emitting tripStarted:", error);
+          }
+        });
+           // When a trip is ended, notify the customer
+           socket.on("endTrip", ({ tripId, customerId }) => {
+            try {
+              if (!tripId || !customerId) {
+                console.error("❌ Missing tripId or customerId");
+                return;
+              }
+              console.log(`✅ Trip ${tripId} ended for customer ${customerId}`);
+              io.to(`customer_${customerId}`).emit("tripEnded", { tripId });
+            } catch (error) {
+              console.error("❌ Error emitting tripEnded:", error);
+            }
+          });
+
     // When a trip is canceled, notify the customer
     socket.on("declineTrip", ({ tripId, customerId }) => {
       try {
