@@ -106,6 +106,8 @@ const initializeSocket = (server) => {
         console.error("❌ Error emitting tripDeclined:", error);
       }
     });
+    //robin work from here downwards call the driver and customer
+    
 
     // Handle disconnection
     socket.on("disconnect", () => {
@@ -123,7 +125,6 @@ const initializeSocket = (server) => {
   });
 
 
-  //robin work from here downwards call the driver and customer
   return io;
 };
 
