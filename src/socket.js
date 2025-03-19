@@ -66,6 +66,20 @@ const initializeSocket = (server) => {
       }
     });
 
+        // When a driver is close, notify the customer for arival
+        socket.on("driverArrived", ({ tripId, customerId }) => {
+          try {
+            if (!tripId || !customerId) {
+              console.error("❌ Missing tripId or customerId");
+              return;
+            }
+            console.log(`✅ Trip ${tripId} accepted for customer ${customerId}`);
+            io.to(`customer_${customerId}`).emit("driverArrived", { tripId });
+          } catch (error) {
+            console.error("❌ Error emitting driverArrived:", error);
+          }
+        });
+    
         // When a trip is started, notify the customer
         socket.on("startTrip", ({ tripId, customerId }) => {
           try {
