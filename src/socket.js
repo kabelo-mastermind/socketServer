@@ -121,6 +121,10 @@ const initializeSocket = (server) => {
       }
     });
 
+
+
+    // lule chats
+
     // Handle disconnection
     socket.on("disconnect", () => {
       const user = connectedUsers[socket.id];
