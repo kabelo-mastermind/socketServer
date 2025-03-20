@@ -123,8 +123,45 @@ const initializeSocket = (server) => {
     });
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // lule chats
+    // Send a message from customer to driver or vice versa
+    socket.on("sendMessage", ({ message, tripId, recipientId, senderType }) => {
+      try {
+        if (!message || !tripId || !recipientId || !senderType) {
+          console.error("❌ Missing parameters for sendMessage");
+          return;
+        }
+
+        console.log(`✅ Message sent from ${senderType} with tripId: ${tripId} to recipient ${recipientId}`);
+
+        // Emit the message to the correct recipient's room
+        const recipientRoom = senderType === "driver" ? `customer_${recipientId}` : `driver_${recipientId}`;
+        
+        // Emit the message to the recipient
+        io.to(recipientRoom).emit("receiveMessage", { message, tripId, senderType });
+      } catch (error) {
+        console.error("❌ Error in sendMessage:", error);
+      }
+    });
+
+    // Receive a message (sent from the other party)
+    socket.on("receiveMessage", ({ message, tripId, senderType }) => {
+      try {
+        if (!message || !tripId || !senderType) {
+          console.error("❌ Missing parameters for receiveMessage");
+          return;
+        }
+
+        console.log(`✅ Received message in tripId: ${tripId} from ${senderType}`);
+        // Further emit or store the message if necessary (e.g., save to DB)
+
+      } catch (error) {
+        console.error("❌ Error in receiveMessage:", error);
+      }
+    });
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
     socket.on("disconnect", () => {
