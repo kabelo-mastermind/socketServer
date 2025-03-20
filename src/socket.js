@@ -67,46 +67,46 @@ const initializeSocket = (server) => {
       }
     });
 
-        // When a driver is close, notify the customer for arival
-        socket.on("driverArrived", ({ tripId, customerId }) => {
-          try {
-            if (!tripId || !customerId) {
-              console.error("❌ Missing tripId or customerId");
-              return;
-            }
-            console.log(`✅ Trip ${tripId} accepted for customer ${customerId}`);
-            io.to(`customer_${customerId}`).emit("driverArrived", { tripId });
-          } catch (error) {
-            console.error("❌ Error emitting driverArrived:", error);
-          }
-        });
-    
-        // When a trip is started, notify the customer
-        socket.on("startTrip", ({ tripId, customerId }) => {
-          try {
-            if (!tripId || !customerId) {
-              console.error("❌ Missing tripId or customerId");
-              return;
-            }
-            console.log(`✅ Trip ${tripId} started for customer ${customerId}`);
-            io.to(`customer_${customerId}`).emit("tripStarted", { tripId });
-          } catch (error) {
-            console.error("❌ Error emitting tripStarted:", error);
-          }
-        });
-           // When a trip is ended, notify the customer
-           socket.on("endTrip", ({ tripId, customerId }) => {
-            try {
-              if (!tripId || !customerId) {
-                console.error("❌ Missing tripId or customerId");
-                return;
-              }
-              console.log(`✅ Trip ${tripId} ended for customer ${customerId}`);
-              io.to(`customer_${customerId}`).emit("tripEnded", { tripId });
-            } catch (error) {
-              console.error("❌ Error emitting tripEnded:", error);
-            }
-          });
+    // When a driver is close, notify the customer for arival
+    socket.on("driverArrived", ({ tripId, customerId }) => {
+      try {
+        if (!tripId || !customerId) {
+          console.error("❌ Missing tripId or customerId");
+          return;
+        }
+        console.log(`✅ Trip ${tripId} accepted for customer ${customerId}`);
+        io.to(`customer_${customerId}`).emit("driverArrived", { tripId });
+      } catch (error) {
+        console.error("❌ Error emitting driverArrived:", error);
+      }
+    });
+
+    // When a trip is started, notify the customer
+    socket.on("startTrip", ({ tripId, customerId }) => {
+      try {
+        if (!tripId || !customerId) {
+          console.error("❌ Missing tripId or customerId");
+          return;
+        }
+        console.log(`✅ Trip ${tripId} started for customer ${customerId}`);
+        io.to(`customer_${customerId}`).emit("tripStarted", { tripId });
+      } catch (error) {
+        console.error("❌ Error emitting tripStarted:", error);
+      }
+    });
+    // When a trip is ended, notify the customer
+    socket.on("endTrip", ({ tripId, customerId }) => {
+      try {
+        if (!tripId || !customerId) {
+          console.error("❌ Missing tripId or customerId");
+          return;
+        }
+        console.log(`✅ Trip ${tripId} ended for customer ${customerId}`);
+        io.to(`customer_${customerId}`).emit("tripEnded", { tripId });
+      } catch (error) {
+        console.error("❌ Error emitting tripEnded:", error);
+      }
+    });
 
     // When a trip is canceled, notify the customer
     socket.on("declineTrip", ({ tripId, customerId }) => {
@@ -123,45 +123,24 @@ const initializeSocket = (server) => {
     });
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // lule chats
-    // Send a message from customer to driver or vice versa
-    socket.on("sendMessage", ({ message, tripId, recipientId, senderType }) => {
-      try {
-        if (!message || !tripId || !recipientId || !senderType) {
-          console.error("❌ Missing parameters for sendMessage");
-          return;
-        }
+    // Handle sending chat messages
+    socket.on("sendMessage", (messageData) => {
+      const { receiverId, message, senderId, timestamp } = messageData;
 
-        console.log(`✅ Message sent from ${senderType} with tripId: ${tripId} to recipient ${recipientId}`);
-
-        // Emit the message to the correct recipient's room
-        const recipientRoom = senderType === "driver" ? `customer_${recipientId}` : `driver_${recipientId}`;
-        
-        // Emit the message to the recipient
-        io.to(recipientRoom).emit("receiveMessage", { message, tripId, senderType });
-      } catch (error) {
-        console.error("❌ Error in sendMessage:", error);
+      if (users[receiverId]) {
+        io.to(users[receiverId]).emit("chatMessage", {
+          senderId,
+          message,
+          timestamp,
+        });
+        console.log(`Message sent to user ${receiverId}: ${message}`);
+      } else {
+        console.log("❌ Receiver not found");
       }
     });
-
-    // Receive a message (sent from the other party)
-    socket.on("receiveMessage", ({ message, tripId, senderType }) => {
-      try {
-        if (!message || !tripId || !senderType) {
-          console.error("❌ Missing parameters for receiveMessage");
-          return;
-        }
-
-        console.log(`✅ Received message in tripId: ${tripId} from ${senderType}`);
-        // Further emit or store the message if necessary (e.g., save to DB)
-
-      } catch (error) {
-        console.error("❌ Error in receiveMessage:", error);
-      }
-    });
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
     socket.on("disconnect", () => {
