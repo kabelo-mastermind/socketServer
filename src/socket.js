@@ -7,8 +7,9 @@ const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: [
-        'http://168.172.185.178:8081',
-        'http://10.100.99.10:8081',
+        'http://168.172.185.178:8081',//master
+        'http://10.100.99.10:8081',//bobo
+        'http://10.100.99.12:8081',//lule
         'http://localhost:8081',
         'https://10.100.99.6:8081'
       ],
