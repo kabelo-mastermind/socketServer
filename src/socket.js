@@ -128,9 +128,12 @@ const initializeSocket = (server) => {
     // Handle sending chat messages
     socket.on("sendMessage", (messageData) => {
       const { receiverId, message, senderId, timestamp } = messageData;
-
-      if (users[receiverId]) {
-        io.to(users[receiverId]).emit("chatMessage", {
+   
+      // Check if the receiver is connected
+      const receiverSocket = Object.values(connectedUsers).find(user => user.userId === receiverId);
+   
+      if (receiverSocket) {
+        io.to(receiverSocket.socketId).emit("chatMessage", {
           senderId,
           message,
           timestamp,
@@ -139,7 +142,8 @@ const initializeSocket = (server) => {
       } else {
         console.log("❌ Receiver not found");
       }
-    });
+   });
+   
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
