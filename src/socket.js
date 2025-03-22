@@ -122,16 +122,31 @@ const initializeSocket = (server) => {
       }
     });
 
+    // When a trip is canceled, notify the driver
+    socket.on("newTripCancel", ({ tripData, driverId }) => {
+      try {
+        if (!tripData || !driverId) {
+          console.error("❌ Missing tripData or driverId");
+          return;
+        }
+        console.log(`🚫 Trip ${tripData.tripId} canceled for driver ${driverId}`);
+        io.to(`driver_${driverId}`).emit("tripCancelled", { tripId: tripData.tripId });
+      } catch (error) {
+        console.error("❌ Error emitting tripCancelled:", error);
+      }
+    });
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // lule chats
     // Handle sending chat messages
     socket.on("sendMessage", (messageData) => {
       const { receiverId, message, senderId, timestamp } = messageData;
-   
+
       // Check if the receiver is connected
       const receiverSocket = Object.values(connectedUsers).find(user => user.userId === receiverId);
-   
+
       if (receiverSocket) {
         io.to(receiverSocket.socketId).emit("chatMessage", {
           senderId,
@@ -142,8 +157,8 @@ const initializeSocket = (server) => {
       } else {
         console.log("❌ Receiver not found");
       }
-   });
-   
+    });
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
