@@ -101,14 +101,14 @@ const initializeSocket = (server) => {
       const { receiverId, message, senderId, timestamp } = messageData;
     
       console.log(`📨 New message from ${senderId} to ${receiverId}: ${message}`);
-      console.log("📋 Full Connected Users:", connectedUsers);  // Log all users
     
-      // Check if the receiver exists
-      const receiverSocket = connectedUsers[receiverId];
+      // Check if the receiver exists in the connectedUsers object
+      const receiverSocket = connectedUsers[receiverId];  // Look for receiverId in the connected users
     
       console.log("🔍 Receiver Socket Data:", receiverSocket);
     
       if (receiverSocket && receiverSocket.socketId) {
+        // Emit message to the correct room (receiver's socketId)
         io.to(receiverSocket.socketId).emit("chatMessage", {
           senderId,
           message,
@@ -119,6 +119,7 @@ const initializeSocket = (server) => {
         console.log("❌ Receiver not found or offline");
       }
     });
+    
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
