@@ -96,12 +96,15 @@ const initializeSocket = (server) => {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ✅ Updated Chat Functionality
-
     socket.on("sendMessage", (messageData) => {
       const { receiverId, message, senderId, timestamp } = messageData;
 
-      // Retrieve the receiver's socket ID
+      console.log(`📨 New message from ${senderId} to ${receiverId}: ${message}`);
+
+      // Retrieve receiver socket ID
       const receiverSocket = connectedUsers[receiverId];
+
+      console.log("🔍 Receiver Socket Data:", receiverSocket);
 
       if (receiverSocket && receiverSocket.socketId) {
         io.to(receiverSocket.socketId).emit("chatMessage", {
@@ -109,12 +112,11 @@ const initializeSocket = (server) => {
           message,
           timestamp,
         });
-        console.log(`📩 Message sent to user ${receiverId}: ${message}`);
+        console.log(`📩 Message delivered to ${receiverId}`);
       } else {
         console.log("❌ Receiver not found or offline");
       }
     });
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
