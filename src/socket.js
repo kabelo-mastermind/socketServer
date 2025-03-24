@@ -32,7 +32,8 @@ const initializeSocket = (server) => {
       const roomName = userType === "driver" ? `driver_${userId}` : `customer_${userId}`;
       socket.join(roomName);
 
-      console.log(`✅ ${userType} with ID ${userId} joined room: ${roomName}`);
+      console.log(`✅ ${userType} ${userId} joined room: ${roomName}`);
+      console.log("📋 Current Connected Users:", connectedUsers);  // Log updated users
     });
 
     // Notify a driver about a new trip request
@@ -98,14 +99,15 @@ const initializeSocket = (server) => {
     // ✅ Updated Chat Functionality
     socket.on("sendMessage", (messageData) => {
       const { receiverId, message, senderId, timestamp } = messageData;
-
+    
       console.log(`📨 New message from ${senderId} to ${receiverId}: ${message}`);
-
-      // Retrieve receiver socket ID
+      console.log("📋 Full Connected Users:", connectedUsers);  // Log all users
+    
+      // Check if the receiver exists
       const receiverSocket = connectedUsers[receiverId];
-
+    
       console.log("🔍 Receiver Socket Data:", receiverSocket);
-
+    
       if (receiverSocket && receiverSocket.socketId) {
         io.to(receiverSocket.socketId).emit("chatMessage", {
           senderId,
@@ -117,6 +119,7 @@ const initializeSocket = (server) => {
         console.log("❌ Receiver not found or offline");
       }
     });
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
