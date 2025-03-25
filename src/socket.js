@@ -119,6 +119,32 @@ const initializeSocket = (server) => {
         console.log("❌ Receiver not found or offline");
       }
     });
+
+    /////delete message
+    // Edit Message
+socket.on("editMessage", (messageData) => {
+  const { messageId, newMessage, senderId, receiverId, timestamp } = messageData;
+
+  console.log(`✏️ Editing message ${messageId}: ${newMessage}`);
+
+  // Send the updated message to the receiver if they are online
+  const receiverSocket = connectedUsers[receiverId];
+  if (receiverSocket && receiverSocket.socketId) {
+    io.to(receiverSocket.socketId).emit("messageEdited", { messageId, newMessage, timestamp });
+  }
+});
+
+// Delete Message
+socket.on("deleteMessage", ({ messageId, senderId, receiverId }) => {
+  console.log(`🗑️ Deleting message ${messageId}`);
+
+  // Notify the receiver that the message has been deleted
+  const receiverSocket = connectedUsers[receiverId];
+  if (receiverSocket && receiverSocket.socketId) {
+    io.to(receiverSocket.socketId).emit("messageDeleted", { messageId });
+  }
+});
+
     
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
