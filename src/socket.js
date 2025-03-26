@@ -83,7 +83,7 @@ const initializeSocket = (server) => {
     socket.on("declineTrip", ({ tripId, customerId }) => {
       if (!tripId || !customerId) return console.error("❌ Missing tripId or customerId");
 
-      console.log(`🚫 Trip ${tripId} canceled for customer ${customerId}`);
+      console.log(`🚫 Trip ${tripId} declined for customer ${customerId}`);
       io.to(`customer_${customerId}`).emit("tripDeclined", { tripId });
     });
 
