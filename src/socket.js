@@ -100,14 +100,14 @@ const initializeSocket = (server) => {
     // ✅ Updated Chat Functionality
     socket.on("sendMessage", (messageData) => {
       const { receiverId, message, senderId, timestamp } = messageData;
-    
+
       console.log(`📨 New message from ${senderId} to ${receiverId}: ${message}`);
-    
+
       // Check if the receiver exists in the connectedUsers object
       const receiverSocket = connectedUsers[receiverId];  // Look for receiverId in the connected users
-    
+
       console.log("🔍 Receiver Socket Data:", receiverSocket);
-    
+
       if (receiverSocket && receiverSocket.socketId) {
         // Emit message to the correct room (receiver's socketId)
         io.to(receiverSocket.socketId).emit("chatMessage", {
@@ -123,31 +123,38 @@ const initializeSocket = (server) => {
 
     /////delete message
     // Edit Message
-socket.on("editMessage", (messageData) => {
-  const { messageId, newMessage, senderId, receiverId, timestamp } = messageData;
+    socket.on("editMessage", (messageData) => {
+      const { messageId, newMessage, senderId, receiverId, timestamp } = messageData;
 
-  console.log(`✏️ Editing message ${messageId}: ${newMessage}`);
+      console.log(`✏️ Editing message ${messageId}: ${newMessage}`);
 
-  // Send the updated message to the receiver if they are online
-  const receiverSocket = connectedUsers[receiverId];
-  if (receiverSocket && receiverSocket.socketId) {
-    io.to(receiverSocket.socketId).emit("messageEdited", { messageId, newMessage, timestamp });
-  }
-});
+      // Send the updated message to the receiver if they are online
+      const receiverSocket = connectedUsers[receiverId];
+      if (receiverSocket && receiverSocket.socketId) {
+        io.to(receiverSocket.socketId).emit("messageEdited", { messageId, newMessage, timestamp });
+      }
+    });
 
-// Delete Message
-socket.on("deleteMessage", ({ messageId, senderId, receiverId }) => {
-  console.log(`🗑️ Deleting message ${messageId}`);
+    // Delete Message
+    socket.on("deleteMessage", ({ messageId, senderId, receiverId }) => {
+      console.log(`🗑️ Deleting message ${messageId}`);
 
-  // Notify the receiver that the message has been deleted
-  const receiverSocket = connectedUsers[receiverId];
-  if (receiverSocket && receiverSocket.socketId) {
-    io.to(receiverSocket.socketId).emit("messageDeleted", { messageId });
-  }
-});
+      // Notify the receiver that the message has been deleted
+      const receiverSocket = connectedUsers[receiverId];
+      if (receiverSocket && receiverSocket.socketId) {
+        io.to(receiverSocket.socketId).emit("messageDeleted", { messageId });
+      }
+    });
 
-    
-    
+
+    /////////////////////////////////////////////////////////////////////////////
+    // Food tracking status steps
+
+    socket.on("foodOrderUpdate", ({ orderId, customerId, status }) => {
+      if (!orderId || !customerId || !status) return console.error("❌ Missing orderId, customerId, or status"); 
+      console.log(`🍔 Order ${orderId} status updated to ${status} for customer ${customerId}`)
+      io.to(`customer_${customerId}`).emit("orderStatusUpdated", { orderId, status })
+      });
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
