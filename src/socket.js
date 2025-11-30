@@ -147,14 +147,41 @@ const initializeSocket = (server) => {
     });
 
 
-    /////////////////////////////////////////////////////////////////////////////
-    // Food tracking status steps
+    socket.on("foodOrderUpdate", ({ orderId, customerId, status, driverId }) => {
+      if (!orderId || !customerId || !status) return console.error("❌ Missing orderId, customerId, or status");
 
-    socket.on("foodOrderUpdate", ({ orderId, customerId, status }) => {
-      if (!orderId || !customerId || !status) return console.error("❌ Missing orderId, customerId, or status"); 
-      console.log(`🍔 Order ${orderId} status updated to ${status} for customer ${customerId}`)
-      io.to(`customer_${customerId}`).emit("orderStatusUpdated", { orderId, status })
-      });
+      console.log(`🍔 Order ${orderId} status updated to ${status}`);
+      console.log(`👤 Customer: ${customerId}, Driver: ${driverId}`);
+      console.log("📊 Connected users:", Object.keys(connectedUsers).length);
+
+      // Check if customer is connected
+      const customer = connectedUsers[customerId];
+      if (customer) {
+        console.log(`✅ Customer ${customerId} is connected as ${customer.userType}`);
+      } else {
+        console.log(`❌ Customer ${customerId} is NOT connected`);
+      }
+
+      // Check if driver is connected
+      if (driverId) {
+        const driver = connectedUsers[driverId];
+        if (driver) {
+          console.log(`✅ Driver ${driverId} is connected as ${driver.userType}`);
+        } else {
+          console.log(`❌ Driver ${driverId} is NOT connected`);
+        }
+      }
+
+      // Emit to customer
+      io.to(`customer_${customerId}`).emit("orderStatusUpdated", { orderId, status });
+      console.log(`📤 Emitted to customer_${customerId}`);
+
+      // Emit to driver
+      if (driverId) {
+        io.to(`driver_${driverId}`).emit("orderStatusUpdated", { orderId, status });
+        console.log(`📤 Emitted to driver_${driverId}`);
+      }
+    });
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
