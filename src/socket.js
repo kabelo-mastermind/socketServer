@@ -30,11 +30,18 @@ const initializeSocket = (server) => {
       // Store user data with socketId
       connectedUsers[userId] = { userId, userType, socketId: socket.id };
 
-      const roomName = userType === "driver" ? `driver_${userId}` : `customer_${userId}`;
+      // Create room based on userType - ADD SUPPORT FOR FOOD-DELIVERY
+      let roomName;
+      if (userType === "driver" || userType === "food-delivery") {
+        roomName = `driver_${userId}`;
+      } else {
+        roomName = `customer_${userId}`;
+      }
+
       socket.join(roomName);
 
       console.log(`✅ ${userType} ${userId} joined room: ${roomName}`);
-      console.log("📋 Current Connected Users:", connectedUsers);  // Log updated users
+      console.log("📋 Current Connected Users:", connectedUsers);
     });
 
     // Notify a driver about a new trip request
@@ -147,40 +154,43 @@ const initializeSocket = (server) => {
     });
 
 
+    // Enhanced food order update with detailed logging
     socket.on("foodOrderUpdate", ({ orderId, customerId, status, driverId }) => {
       if (!orderId || !customerId || !status) return console.error("❌ Missing orderId, customerId, or status");
 
-      console.log(`🍔 Order ${orderId} status updated to ${status}`);
-      console.log(`👤 Customer: ${customerId}, Driver: ${driverId}`);
-      console.log("📊 Connected users:", Object.keys(connectedUsers).length);
+      console.log('\n=== 🍔 FOOD ORDER UPDATE ===');
+      console.log(`Order: ${orderId}, Status: ${status}`);
+      console.log(`Customer: ${customerId}, Driver: ${driverId}`);
 
-      // Check if customer is connected
+      // Check customer connection
       const customer = connectedUsers[customerId];
       if (customer) {
-        console.log(`✅ Customer ${customerId} is connected as ${customer.userType}`);
+        console.log(`✅ Customer ${customerId} connected as ${customer.userType}`);
       } else {
-        console.log(`❌ Customer ${customerId} is NOT connected`);
+        console.log(`❌ Customer ${customerId} NOT connected`);
       }
 
-      // Check if driver is connected
+      // Check driver connection
       if (driverId) {
         const driver = connectedUsers[driverId];
         if (driver) {
-          console.log(`✅ Driver ${driverId} is connected as ${driver.userType}`);
+          console.log(`✅ Driver ${driverId} connected as ${driver.userType}`);
+          console.log(`📤 Emitting to driver_${driverId}`);
         } else {
-          console.log(`❌ Driver ${driverId} is NOT connected`);
+          console.log(`❌ Driver ${driverId} NOT connected`);
+          console.log('📋 Available users:', Object.keys(connectedUsers));
         }
       }
 
       // Emit to customer
       io.to(`customer_${customerId}`).emit("orderStatusUpdated", { orderId, status });
-      console.log(`📤 Emitted to customer_${customerId}`);
 
       // Emit to driver
       if (driverId) {
         io.to(`driver_${driverId}`).emit("orderStatusUpdated", { orderId, status });
-        console.log(`📤 Emitted to driver_${driverId}`);
       }
+
+      console.log('=== END FOOD ORDER UPDATE ===\n');
     });
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
