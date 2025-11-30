@@ -154,39 +154,38 @@ const initializeSocket = (server) => {
     });
 
 
-// Add this before your foodOrderUpdate handler
-socket.on("foodOrderUpdate", (...args) => {
-  console.log('🔍 RAW foodOrderUpdate arguments received:', args);
-  console.log('🔍 Number of arguments:', args.length);
-  
-  // If it's an array with one object, use that object
-  if (args.length === 1 && typeof args[0] === 'object') {
-    const data = args[0];
-    console.log('🔍 Using data from object:', data);
-    
-    // Your existing logic here with data object
-    const { orderId, customerId, status, driverId } = data;
-    
-    console.log('\n=== 🍔 FOOD ORDER UPDATE (FROM OBJECT) ===');
-    console.log(`Order: ${orderId}, Status: ${status}`);
-    console.log(`Customer: ${customerId}, Driver: ${driverId}`);
-    
-    // Rest of your logic...
-    
-  } else if (args.length >= 3) {
-    // If it's multiple parameters (old way)
-    console.log('🔍 Using data from multiple parameters');
-    const [orderId, customerId, status, driverId] = args;
-    
-    console.log('\n=== 🍔 FOOD ORDER UPDATE (FROM PARAMS) ===');
-    console.log(`Order: ${orderId}, Status: ${status}`);
-    console.log(`Customer: ${customerId}, Driver: ${driverId}`);
-    
-    // Rest of your logic...
-  } else {
-    console.error('❌ Unexpected arguments format for foodOrderUpdate');
-  }
-});
+    // 🔥 FINAL + WORKING FOOD ORDER UPDATE HANDLER
+    socket.on("foodOrderUpdate", (data) => {
+      console.log("🔍 RAW foodOrderUpdate received:", data);
+
+      if (!data || typeof data !== "object") {
+        console.error("❌ Invalid foodOrderUpdate payload:", data);
+        return;
+      }
+
+      const { orderId, status, customerId, driverId } = data;
+
+      if (!customerId) {
+        console.error("❌ Missing customerId in foodOrderUpdate");
+        return;
+      }
+
+      console.log("\n=== 🍔 FOOD ORDER UPDATE RECEIVED FROM DRIVER ===");
+      console.log(`Order: ${orderId}`);
+      console.log(`Status: ${status}`);
+      console.log(`Customer ID: ${customerId}`);
+      console.log(`Driver ID: ${driverId}`);
+
+      const customerRoom = `customer_${customerId}`;
+
+      console.log(`📤 Forwarding update to room: ${customerRoom}`);
+
+      // ⭐ THE IMPORTANT PART ⭐
+      io.to(customerRoom).emit("foodOrderUpdate", data);
+
+      console.log(`✅ Update delivered to customer room: ${customerRoom}`);
+    });
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
