@@ -154,44 +154,39 @@ const initializeSocket = (server) => {
     });
 
 
-    // Enhanced food order update with detailed logging
-    socket.on("foodOrderUpdate", ({ orderId, customerId, status, driverId }) => {
-      if (!orderId || !customerId || !status) return console.error("❌ Missing orderId, customerId, or status");
-
-      console.log('\n=== 🍔 FOOD ORDER UPDATE ===');
-      console.log(`Order: ${orderId}, Status: ${status}`);
-      console.log(`Customer: ${customerId}, Driver: ${driverId}`);
-
-      // Check customer connection
-      const customer = connectedUsers[customerId];
-      if (customer) {
-        console.log(`✅ Customer ${customerId} connected as ${customer.userType}`);
-      } else {
-        console.log(`❌ Customer ${customerId} NOT connected`);
-      }
-
-      // Check driver connection
-      if (driverId) {
-        const driver = connectedUsers[driverId];
-        if (driver) {
-          console.log(`✅ Driver ${driverId} connected as ${driver.userType}`);
-          console.log(`📤 Emitting to driver_${driverId}`);
-        } else {
-          console.log(`❌ Driver ${driverId} NOT connected`);
-          console.log('📋 Available users:', Object.keys(connectedUsers));
-        }
-      }
-
-      // Emit to customer
-      io.to(`customer_${customerId}`).emit("orderStatusUpdated", { orderId, status });
-
-      // Emit to driver
-      if (driverId) {
-        io.to(`driver_${driverId}`).emit("orderStatusUpdated", { orderId, status });
-      }
-
-      console.log('=== END FOOD ORDER UPDATE ===\n');
-    });
+// Add this before your foodOrderUpdate handler
+socket.on("foodOrderUpdate", (...args) => {
+  console.log('🔍 RAW foodOrderUpdate arguments received:', args);
+  console.log('🔍 Number of arguments:', args.length);
+  
+  // If it's an array with one object, use that object
+  if (args.length === 1 && typeof args[0] === 'object') {
+    const data = args[0];
+    console.log('🔍 Using data from object:', data);
+    
+    // Your existing logic here with data object
+    const { orderId, customerId, status, driverId } = data;
+    
+    console.log('\n=== 🍔 FOOD ORDER UPDATE (FROM OBJECT) ===');
+    console.log(`Order: ${orderId}, Status: ${status}`);
+    console.log(`Customer: ${customerId}, Driver: ${driverId}`);
+    
+    // Rest of your logic...
+    
+  } else if (args.length >= 3) {
+    // If it's multiple parameters (old way)
+    console.log('🔍 Using data from multiple parameters');
+    const [orderId, customerId, status, driverId] = args;
+    
+    console.log('\n=== 🍔 FOOD ORDER UPDATE (FROM PARAMS) ===');
+    console.log(`Order: ${orderId}, Status: ${status}`);
+    console.log(`Customer: ${customerId}, Driver: ${driverId}`);
+    
+    // Rest of your logic...
+  } else {
+    console.error('❌ Unexpected arguments format for foodOrderUpdate');
+  }
+});
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Handle disconnection
