@@ -1,22 +1,54 @@
 const { Server } = require("socket.io");
+const { admin, initFirebaseAdmin } = require("./config/firebaseAdmin");
 
 let io;
 const connectedUsers = {}; // Store connected users
 
+const getAllowedOrigins = () => {
+  const raw = process.env.ALLOWED_ORIGINS || "";
+  return raw
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+};
+
 const initializeSocket = (server) => {
+  initFirebaseAdmin();
+  const allowedOrigins = getAllowedOrigins();
+
   io = new Server(server, {
     cors: {
-      // origin: [
-      //   'http://168.172.185.178:8081', // master
-      //   'http://10.100.99.10:8081', // bobo
-      //   'http://10.100.99.12:8081', // lule
-      //   'http://localhost:8081',
-      //   'https://10.100.99.6:8081'
-      // ],
-      origin: '*',
+      origin: (origin, callback) => {
+        if (!origin) {
+          return callback(null, true);
+        }
+        if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error("CORS_NOT_ALLOWED"));
+      },
       methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
       credentials: true,
-      allowedHeaders: ["Content-Type", "Authorization"]
+      allowedHeaders: ["Content-Type", "Authorization"],
+    },
+  });
+
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.auth && socket.handshake.auth.token;
+      if (!token) {
+        return next(new Error("AUTH_MISSING_TOKEN"));
+      }
+
+      const decoded = await admin.auth().verifyIdToken(token);
+      socket.user = {
+        uid: decoded.uid,
+        claims: decoded,
+      };
+
+      return next();
+    } catch (error) {
+      return next(new Error("AUTH_INVALID_TOKEN"));
     }
   });
 
