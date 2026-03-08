@@ -230,6 +230,60 @@ const initializeSocket = (server) => {
       }
     });
 
+    // Handle SOS alerts emitted by clients
+    socket.on('sosAlert', async (payload) => {
+      try {
+        const senderUid = socket.user?.uid || null;
+
+        // Normalize incoming payload to a predictable shape for consumers
+        const normalized = {
+          user_id: payload && payload.user_id ? payload.user_id : null,
+          user_type: payload && payload.user_type ? payload.user_type : null,
+          trip_id: payload && payload.trip_id ? payload.trip_id : null,
+          latitude: payload && (payload.latitude !== undefined) ? Number(payload.latitude) : null,
+          longitude: payload && (payload.longitude !== undefined) ? Number(payload.longitude) : null,
+          accuracy: payload && (payload.accuracy !== undefined) ? (payload.accuracy === null ? null : Number(payload.accuracy)) : null,
+          trigger_source: (payload && payload.trigger_source) ? payload.trigger_source : 'in_app_button',
+          severity: (payload && payload.severity) ? payload.severity : 'unknown',
+          description: (payload && payload.description) ? payload.description : null,
+          phone: (payload && payload.phone) ? payload.phone : null,
+          metadata: (payload && payload.metadata) ? payload.metadata : null,
+          senderUid,
+          receivedAt: new Date().toISOString(),
+        };
+
+        console.log('🚨 SOS received (normalized):', normalized);
+
+        // Do not persist on the socket server — frontend already POSTs to the HTTP endpoint.
+        // Realtime delivery only below.
+
+        // 1) Emit to any admin/support/emergency staff connected
+        Object.values(connectedUsers).forEach((u) => {
+          if (u && u.userType && (u.userType === 'admin' || u.userType === 'support' || u.userType === 'emergency')) {
+            if (u.socketId) io.to(u.socketId).emit('sosAlert', normalized);
+          }
+        });
+
+        // 2) Emit to generic emergency dashboard room
+        io.to('emergency_room').emit('sosAlert', normalized);
+
+        // 3) If the alert references a specific user, emit to their room (customer/driver)
+        try {
+          if (normalized.user_type && normalized.user_id) {
+            if (normalized.user_type === 'driver' || normalized.user_type === 'food-delivery') {
+              io.to(`driver_${normalized.user_id}`).emit('sosAlert', normalized);
+            } else {
+              io.to(`customer_${normalized.user_id}`).emit('sosAlert', normalized);
+            }
+          }
+        } catch (e) {
+          console.warn('⚠️ Failed to emit to user room for sosAlert:', e);
+        }
+      } catch (err) {
+        console.error('❌ Error handling sosAlert:', err);
+      }
+    });
+
     // Handle socket errors
     socket.on("error", (error) => {
       console.error("❌ Socket error:", error);
